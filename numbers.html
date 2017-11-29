@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      #container {
+        width: 500px;
+        height: 500px;
+        margin: 20px auto;
+        text-align: center;
+        border: 1px solid grey;
+        padding: 20px;
+      }
+      #set {
+        height: 1px;
+      }
+      .checked {
+        background-color: tomato;
+      }
+      .hide {
+        display: none;
+      }
+      table, td {
+        border: 1px solid black;
+      }
+      table {
+        margin: 20px auto;
+      }
+      td {
+        width: 60px;
+        height: 60px;
+        text-align: center;
+        padding: 0px;
+        font-weight: bold;
+      }
+      td:hover {
+        cursor: pointer;
+      }
+    </style>
+    <link rel="shortcut icon" type="image/x-icon" href="icon.png">
+    <title>Number Game</title>
+  </head>
+  <body>
+    <div id="container">
+      <input type="button" value="Начать" onclick="begin(event)">
+      <p id="p">Начиная с "1", нажимайте на числа по порядку до тех пор, пока не дойдете до последнего</p>
+      <p class="hide" id ="p2">Времени осталось: <span id="time"></span></p>
+      <p class="hide" id="p3"></p>
+      <div id="set"></div>
+      <input class="hide" type='button' value="Новая игра" onclick="newGame()">
+    </div>
+  </body>
+  <script>
+    var n = 5; // размер поля
+    var m = 60; // таймер
+    var count; // счетчик ходов
+    var cellLeft; // осталось клеток
+    var parent = document.getElementById("container");
+    var set = document.getElementById("set"); // блок, относительно которого позиционируем таблицу
+    var p = document.getElementById("p");
+    var newP = document.getElementById("p2");
+    var winOrLoose = document.getElementById("p3");
+    var button = document.querySelector("input[value='Новая игра']");
+    var span = document.getElementById("time");
+    var td; // массив ячеек
+    var tId; // номер таймера
+
+    function begin(e) {
+      parent.removeChild(e.target);
+      parent.removeChild(p);
+      newP.classList.remove("hide");
+      set.insertAdjacentHTML("afterEnd",createTable(5));
+      td = document.querySelectorAll("td");
+      newGame();
+    }
+
+    function createRow(num1) {
+      var str = "<tr>";
+      for (var i = 0; i < num1; i++) {
+      str += "<td></td>";
+      }
+      return str + "</tr>";
+    }
+
+    function createTable(num2) {
+      var st = "<table>";
+      for (var i = 0; i < num2; i++) {
+        st += createRow(n);
+      }
+      return st + "</table>"
+    }
+
+    function newGame() {
+      clearInterval(tId);
+      var arr = createArray();
+      count = 1;
+      cellLeft = n*n;
+      for (var i = 0; i < td.length; i++) {
+        td[i].innerHTML = "";
+        td[i].classList.remove("checked");
+      }
+      // заполняем таблицу числами
+      for (var i = 0; i < td.length; i++) {
+        td[i].innerHTML = arr[i];
+        td[i].style.color = "rgb(" + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + "," + Math.floor(Math.random() * 255) + ")";
+        td[i].style.fontSize = "" + Math.floor((Math.random() * 24) + 16) + "px";
+        td[i].addEventListener("click", check);
+      }
+      button.classList.remove("hide");
+      showTime(m);
+    }
+
+// создаем вспомогательный массив
+    function createArray() {
+      var arr = [];
+      while (arr.length < n*n) {
+        var temp = Math.floor(Math.random() * (25 - 1 + 1)) + 1;
+        if(!arr.some(function(elem) { return (elem === temp);})) {
+          arr.push(temp);
+        }
+      }
+      return arr;
+    }
+
+    // нажатие на клетку
+    function check() {
+      if(+this.innerHTML === count) {
+        count++;
+        this.classList.add("checked");
+        this.removeEventListener("click", check);
+        cellLeft--;
+        if(cellLeft === 0) {
+          clearInterval(tId);
+          newP.classList.add("hide");
+          winOrLoose.classList.remove("hide");
+          winOrLoose.innerHTML = "Вы выиграли!";
+        }
+      }
+    }
+
+    function showTime(t) {
+      span.innerHTML = t;
+      tId = setInterval(function() {
+        t--;
+        if(t === 0) {
+          clearInterval(tId);
+          newP.classList.add("hide");
+          for (var i = 0; i < td.length; i++) {
+            td[i].removeEventListener("click", check);
+          }
+          winOrLoose.classList.remove("hide");
+          winOrLoose.innerHTML = "Вы проиграли!";
+        } else {
+          span.innerHTML = t;
+        }
+        span.innerHTML = t;
+        },1000);
+    }
+  </script>
+</html>
